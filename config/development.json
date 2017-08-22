@@ -1,0 +1,11 @@
+{
+  "client": [{
+    "name": "chat",
+    "key": "1a778393fd9bd",
+    "secret": "21e35ef705384"
+  },{
+    "name": "go",
+    "key": "8a8c3aff2592b",
+    "secret": "2e62108dd78e6"
+  }]
+}
