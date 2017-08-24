@@ -4,16 +4,18 @@
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
-// import home from './home';
 
-const router = express.Router();
-fs.readdirSync(__dirname).forEach((file) => {
-  if (file === 'index.js' || file === 'home.js') {
-    return;
-  }
-  router.use(require(path.join(__dirname, file)));
-});
 
-// router.use(home);
-
-module.exports = router;
+module.exports = function(globalWsInstance){
+  const router = express.Router();
+  fs.readdirSync(__dirname).forEach(file => {
+    if (file === 'index.js') {
+      return;
+    }
+    if (file.endsWith('.js')) {
+      // eslint-disable-next-line global-require,import/no-dynamic-require
+      router.use(require(path.join(__dirname, file))(globalWsInstance));
+    }
+  });
+  return router;
+};

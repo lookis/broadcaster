@@ -1,0 +1,25 @@
+{
+  "service": {
+    "success": "000000",
+    "errors": {
+      "unknown": "000006",
+      "token": "000007",
+      "unavailable": "000008"
+    }
+  },
+  "authentication": {
+    "errors": {
+      "timestamp": "000002",
+      "nonce": "000003",
+      "signature": "000004",
+      "client": "000010"
+    }
+  },
+  "validation": {
+    "errors": {
+      "missing": "000001",
+      "json": "000005",
+      "invalid": "000009"
+    }
+  }
+}

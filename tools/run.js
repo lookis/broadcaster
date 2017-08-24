@@ -1,12 +1,4 @@
 #!/usr/bin/env node
-/**
- * Node.js API Starter Kit (https://reactstarter.com/nodejs)
- *
- * Copyright © 2016-present Kriasoft, LLC. All rights reserved.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE.txt file in the root directory of this source tree.
- */
 
 const fs = require('fs');
 const path = require('path');
@@ -90,10 +82,6 @@ function spawnServer() {
 
 module.exports = task('run', () =>
   Promise.resolve()
-    // Migrate database schema to the latest version
-    .then(() => {
-      cp.spawnSync('node', ['tools/db.js', 'migrate'], { stdio: 'inherit' });
-    })
     // Compile and launch the app in watch mode, restart it after each rebuild
     .then(() =>
       build({

@@ -1,12 +1,4 @@
 #!/usr/bin/env node
-/**
- * Node.js API Starter Kit (https://reactstarter.com/nodejs)
- *
- * Copyright © 2016-present Kriasoft, LLC. All rights reserved.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE.txt file in the root directory of this source tree.
- */
 
 const fs = require('fs');
 const path = require('path');
@@ -31,6 +23,7 @@ module.exports = task(
 
       let watcher = chokidar.watch([
         'src',
+        'config',
         'package.json',
         'yarn.lock',
       ]);
@@ -48,13 +41,11 @@ module.exports = task(
         const dest = src.startsWith('src')
           ? `build/${path.relative('src', src)}`
           : `build/${src}`;
-
         try {
           switch (event) {
             // Create a directory if it doesn't exist
             case 'addDir':
-              if (src.startsWith('src') && !fs.existsSync(dest))
-                fs.mkdirSync(dest);
+              if (!fs.existsSync(dest)) fs.mkdirSync(dest);
               if (ready && onComplete) onComplete();
               break;
 
@@ -82,7 +73,7 @@ module.exports = task(
                 console.log(src, '->', dest);
                 if (map)
                   fs.writeFileSync(`${dest}.map`, JSON.stringify(map), 'utf8');
-              } else if (src.startsWith('src')) {
+              } else {
                 const data = fs.readFileSync(src, 'utf8');
                 fs.writeFileSync(dest, data, 'utf8');
                 console.log(src, '->', dest);

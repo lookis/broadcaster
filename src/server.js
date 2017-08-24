@@ -1,18 +1,8 @@
-/**
- * Node.js API Starter Kit (https://reactstarter.com/nodejs)
- *
- * Copyright © 2016-present Kriasoft, LLC. All rights reserved.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE.txt file in the root directory of this source tree.
- */
-
-/* @flow */
 /* eslint-disable no-console, no-shadow */
 
 import config from 'config';
 import app from './app';
-import redis from './redis';
+import { redis, subscriber } from './redis';
 
 const port = config.server.port;
 const host = config.server.host;
@@ -25,7 +15,7 @@ const server = app.listen(port, host, () => {
 // Shutdown Node.js app gracefully
 function handleExit(options, err) {
   if (options.cleanup) {
-    const actions = [server.close, redis.quit];
+    const actions = [server.close, redis.quit, subscriber.quit];
     actions.forEach((close, i) => {
       try {
         close(() => {

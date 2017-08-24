@@ -1,6 +1,6 @@
 {
   "redis": {
-    "db": 0
+    "db": 1
   },
   "clients": {
     "1a778393fd9bd":{
