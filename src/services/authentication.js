@@ -13,22 +13,24 @@ export default function(ws, msg) {
   verifier(msg)
     .then(() => {
       const token = uuid();
-      redis.setexAsync(`token|${token}`, 60 * 60 * 24, msg.client).then(() => {
-        fetch(`${config.clients[msg.client].callback}/${ws.id}`, {
-          headers: {
-            Accept: 'application/json',
-            'user-agent': 'GoBroadcaster',
-          },
-          method: 'PUT',
-        })
-          .catch(() => {})
-          .then(() => {
-            ws.sendJson({
-              code: constants.service.success,
-              msg: token,
+      redis
+        .setexAsync(`token|${ws.id}|${token}`, 60 * 60 * 24, msg.client)
+        .then(() => {
+          fetch(`${config.clients[msg.client].callback}/${ws.id}`, {
+            headers: {
+              Accept: 'application/json',
+              'user-agent': 'Broadcaster',
+            },
+            method: 'PUT',
+          })
+            .catch(() => {})
+            .then(() => {
+              ws.sendJson({
+                code: constants.service.success,
+                msg: token,
+              });
             });
-          });
-      });
+        });
     })
     .catch(e => {
       ws.sendJson(e);

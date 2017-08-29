@@ -9,7 +9,7 @@ export default function(ws, client, msg) {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
-      'user-agent': 'GoBroadcaster',
+      'user-agent': 'Broadcaster',
     },
     method: 'POST',
     body: JSON.stringify(msg.payload),

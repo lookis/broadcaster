@@ -5,7 +5,6 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 
-
 module.exports = function(globalWsInstance){
   const router = express.Router();
   fs.readdirSync(__dirname).forEach(file => {

@@ -244,24 +244,4 @@ describe('authentication', () => {
     });
   });
 
-  it('should return unknown service if service goes wrong', done => {
-    client.on('message', msg => {
-      const message = JSON.parse(msg);
-      expect(message.code).to.be.equal(constants.service.errors.unknown);
-      done();
-    });
-    client.on('open', () => {
-      const token = Math.random().toString();
-      redis
-        .setexAsync(`token|${token}`, 60, Object.keys(config.clients)[0])
-        .then(() => {
-          client.send(
-            JSON.stringify({
-              token,
-              service: 'unknown',
-            }),
-          );
-        });
-    });
-  });
 });

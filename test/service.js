@@ -7,6 +7,7 @@ import config from 'config';
 import constants from '../src/constants.json';
 import { redis } from '../src/redis';
 import app from '../src/app';
+import sign from './lib/sign';
 
 // expect(err).to.be.null;
 // expect(res).to.have.status(200);
@@ -50,23 +51,30 @@ describe('service', () => {
   });
 
   it('should return unknown service if service goes wrong', done => {
-    client.on('message', msg => {
+    client.once('message', msg => {
       const message = JSON.parse(msg);
-      expect(message.code).to.be.equal(constants.service.errors.unknown);
-      done();
-    });
+      expect(message.code).to.be.equal(constants.service.success);
+      const token = message.msg;
+      client.on('message', msg2 => {
+        const message2 = JSON.parse(msg2);
+        expect(message2.code).to.be.equal(constants.service.errors.unknown);
+        done();
+      });
+      client.send(
+        JSON.stringify({
+          token,
+          service: 'unknown',
+        }),
+      );
+    })
     client.on('open', () => {
-      const token = Math.random().toString();
-      redis
-        .setexAsync(`token|${token}`, 60, Object.keys(config.clients)[0])
-        .then(() => {
-          client.send(
-            JSON.stringify({
-              token,
-              service: 'unknown',
-            }),
-          );
-        });
+      const message = {
+        service: 'authentication',
+        timestamp: new Date().getTime() / 1000,
+        client: Object.keys(config.clients)[0],
+        nonce: Math.random().toString(),
+      };
+      client.send(JSON.stringify(sign(message)));
     });
   });
 });

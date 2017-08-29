@@ -39,7 +39,7 @@ describe('forward', () => {
 
   it('should forward downstream', done => {
     const payload = {
-      hello: 'world',
+      hello: Math.random().toString(),
     };
     client.on('message', msg => {
       const message = JSON.parse(msg);
