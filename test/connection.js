@@ -86,7 +86,13 @@ describe('connection', () => {
       const url = new URL(clientInfo.callback);
       const callback = nock(url.origin)
         .delete(uri => uri.startsWith(url.pathname))
-        .reply(200);
+        .reply(200, () => {
+          redis.keys('token*', (err, r) => {
+            redis.exists(r[0], (_, exists) => {
+              expect(exists).to.be.equal(0);
+            });
+          });
+        });
       callback.on('replied', () => {
         done();
       });

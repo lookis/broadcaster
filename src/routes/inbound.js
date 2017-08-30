@@ -9,6 +9,8 @@ import fetch from 'node-fetch';
 import service from '../services';
 import { subscriber, redis } from '../redis';
 
+const iterKeys = function*(key) {};
+
 module.exports = function() {
   const router = express.Router();
 
@@ -20,22 +22,29 @@ module.exports = function() {
     ws.on('message', service(ws));
     ws.on('close', () => {
       subscriber.unsubscribe(`connection|${ws.id}`);
-      redis.keysAsync(`token|${ws.id}|*`).then(keys => {
-        keys.forEach(key => {
+      let cursor = 0;
+      const scan = r => {
+        cursor = r[0];
+        r[1].forEach(key => {
           redis.getAsync(key).then(client => {
             if (client && config.clients[client]) {
-              fetch(`${config.clients[client].callback}/${ws.id}`, {
-                headers: {
-                  Accept: 'application/json',
-                  'Content-Type': 'application/json',
-                  'user-agent': 'Broadcaster',
-                },
-                method: 'DELETE',
-              }).catch(() => {});
+              redis.delAsync(key).then(() => {
+                fetch(`${config.clients[client].callback}/${ws.id}`, {
+                  headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'user-agent': 'Broadcaster',
+                  },
+                  method: 'DELETE',
+                }).catch(() => {});
+              });
             }
           });
         });
-      });
+      };
+      do {
+        redis.scanAsync(cursor, `token|${ws.id}|*`).then(scan);
+      } while (cursor !== 0);
     });
     subscriber.subscribe(`connection|${ws.id}`);
   });
