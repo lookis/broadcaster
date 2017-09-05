@@ -9,13 +9,11 @@ import { redis } from '../redis';
 
 function sign(msg, secret) {
   const ordered = {};
-  Object.keys(msg).sort().forEach(key => {
-    if (msg[key] && key !== 'signature') {
-      if (typeof msg[key] === 'object') {
-        ordered[key] = JSON.stringify(msg[key]);
-      } else {
-        ordered[key] = msg[key];
-      }
+  ['timestamp', 'client', 'nonce'].forEach(key => {
+    if (typeof msg[key] === 'object') {
+      ordered[key] = JSON.stringify(msg[key]);
+    } else {
+      ordered[key] = msg[key];
     }
   });
   const stringA = querystring.unescape(querystring.stringify(ordered));
@@ -25,10 +23,18 @@ function sign(msg, secret) {
 
 function verifier(msg) {
   return new Promise((resolve, reject) => {
+    if (!msg.client) {
+      reject({
+        code: constants.validation.errors.missing,
+        msg: `client is required`,
+      });
+      return;
+    }
     // timestamp
     if (!msg.timestamp) {
       reject({
         code: constants.validation.errors.missing,
+        client: msg.client,
         msg: `timestamp is required`,
       });
       return;
@@ -38,15 +44,8 @@ function verifier(msg) {
       // 5 minutes
       reject({
         code: constants.authentication.errors.timestamp,
+        client: msg.client,
         msg: `invalid timestamp`,
-      });
-      return;
-    }
-
-    if (!msg.client) {
-      reject({
-        code: constants.validation.errors.missing,
-        msg: `client is required`,
       });
       return;
     }
@@ -54,6 +53,7 @@ function verifier(msg) {
     if (!config.clients[msg.client]) {
       reject({
         code: constants.authentication.errors.client,
+        client: msg.client,
         msg: `unknown client`,
       });
       return;
@@ -62,6 +62,7 @@ function verifier(msg) {
     if (!msg.nonce) {
       reject({
         code: constants.validation.errors.missing,
+        client: msg.client,
         msg: `nonce is required`,
       });
       return;
@@ -70,6 +71,7 @@ function verifier(msg) {
       if (exists) {
         reject({
           code: constants.authentication.errors.nonce,
+          client: msg.client,
           msg: `duplicated nonce`,
         });
         return;
@@ -82,6 +84,7 @@ function verifier(msg) {
           if (signature !== msg.signature) {
             reject({
               code: constants.authentication.errors.signature,
+              client: msg.client,
               msg: `invalid signature`,
             });
             return;

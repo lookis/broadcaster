@@ -21,7 +21,7 @@ export default function(ws) {
     }
     if (msg.token) {
       redis
-        .getAsync(`token|${ws.id}|${msg.token}`)
+        .getAsync(`token|${msg.token}`)
         .then(client => {
           if (client && config.clients[client]) {
             let service;
@@ -32,12 +32,14 @@ export default function(ws) {
               service(ws, client, msg);
             } catch (e) {
               ws.sendJson({
+                client,
                 code: constants.service.errors.unknown,
                 msg: 'unknown service',
               });
             }
           } else {
             ws.sendJson({
+              client,
               code: constants.service.errors.token,
               msg: 'invalid token',
             });

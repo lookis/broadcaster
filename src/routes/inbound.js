@@ -9,8 +9,6 @@ import fetch from 'node-fetch';
 import service from '../services';
 import { subscriber, redis } from '../redis';
 
-const iterKeys = function*(key) {};
-
 module.exports = function() {
   const router = express.Router();
 
@@ -43,7 +41,7 @@ module.exports = function() {
         });
       };
       do {
-        redis.scanAsync(cursor, `token|${ws.id}|*`).then(scan);
+        redis.scanAsync(cursor, 'match', `token|${ws.id}|*`).then(scan);
       } while (cursor !== 0);
     });
     subscriber.subscribe(`connection|${ws.id}`);

@@ -15,6 +15,8 @@ app.use(bodyParser.json());
 
 app.use(require('./routes')(wsInstance));
 
+app.use(express.static('./public'));
+
 const pe = new PrettyError();
 pe.skipNodeFiles();
 pe.skipPackage('express');

@@ -50,7 +50,12 @@ describe('authentication', () => {
         done();
       });
       client.on('open', () => {
-        client.send('{"service": "authentication"}');
+        client.send(
+          JSON.stringify({
+            service: 'authentication',
+            client: 'something',
+          }),
+        );
       });
     });
 
@@ -66,6 +71,7 @@ describe('authentication', () => {
         client.send(
           JSON.stringify({
             service: 'authentication',
+            client: 'something',
             timestamp: new Date().getTime() / 1000 - 5 * 60 - 1,
           }),
         );
@@ -84,6 +90,7 @@ describe('authentication', () => {
         client.send(
           JSON.stringify({
             service: 'authentication',
+            client: 'something',
             timestamp: new Date().getTime() / 1000 + 5 * 60 + 1,
           }),
         );
@@ -207,6 +214,7 @@ describe('authentication', () => {
     it('should pass if everything is good', done => {
       client.on('message', msg => {
         const message = JSON.parse(msg);
+        expect(message.client).to.be.equal(Object.keys(config.clients)[0]);
         expect(message.code).to.be.equal(constants.service.success);
         done();
       });
@@ -243,5 +251,4 @@ describe('authentication', () => {
       });
     });
   });
-
 });
