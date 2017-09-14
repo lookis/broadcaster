@@ -43,7 +43,7 @@ describe('forward', () => {
     };
     client.on('message', msg => {
       const message = JSON.parse(msg);
-      if (message.code === constants.service.success) {
+      if (message.payload.code === constants.service.success) {
         const clientId = Object.keys(config.clients)[0];
         const clientInfo = config.clients[clientId];
         const url = new URL(clientInfo.callback);
@@ -61,7 +61,7 @@ describe('forward', () => {
         });
         client.send(
           JSON.stringify({
-            token: message.msg,
+            token: message.payload.msg,
             service: 'forward',
             payload,
           }),
@@ -85,7 +85,7 @@ describe('forward', () => {
     };
     client.on('message', msg => {
       const message = JSON.parse(msg);
-      if (message.code === constants.service.success) {
+      if (message.payload.code === constants.service.success) {
         client.close();
         client = new WebSocket(
           `ws://${config.server.host === '0.0.0.0' ||
@@ -112,7 +112,7 @@ describe('forward', () => {
         client.on('open', () => {
           client.send(
             JSON.stringify({
-              token: message.msg,
+              token: message.payload.msg,
               service: 'forward',
               payload,
             }),

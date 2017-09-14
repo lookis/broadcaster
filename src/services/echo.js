@@ -8,6 +8,7 @@ export default function(ws, client, msg) {
     `connection|${ws.id}`,
     JSON.stringify({
       client,
+      type: 'echo',
       payload: msg.payload,
     }),
   );

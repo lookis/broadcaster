@@ -45,10 +45,10 @@ describe('echo', () => {
         done();
       });
       const message = JSON.parse(msg);
-      if (message.code === constants.service.success) {
+      if (message.payload.code === constants.service.success) {
         client.send(
           JSON.stringify({
-            token: message.msg,
+            token: message.payload.msg,
             service: 'echo',
             payload,
           }),

@@ -21,22 +21,26 @@ export default function(ws) {
     }
     if (msg.token) {
       redis
-        .getAsync(`token|${msg.token}`)
+        .getAsync(`token:client|${msg.token}`)
         .then(client => {
           if (client && config.clients[client]) {
-            let service;
-            try {
-              // eslint-disable-next-line import/no-dynamic-require,global-require
-              service = require(path.join(__dirname, `${msg.service}.js`))
-                .default;
-              service(ws, client, msg);
-            } catch (e) {
-              ws.sendJson({
-                client,
-                code: constants.service.errors.unknown,
-                msg: 'unknown service',
+            redis
+              .setexAsync(`token:connection|${msg.token}`, 60 * 60 * 24, ws.id)
+              .then(() => {
+                let service;
+                try {
+                  // eslint-disable-next-line import/no-dynamic-require,global-require
+                  service = require(path.join(__dirname, `${msg.service}.js`))
+                    .default;
+                  service(ws, client, msg);
+                } catch (e) {
+                  ws.sendJson({
+                    client,
+                    code: constants.service.errors.unknown,
+                    msg: 'unknown service',
+                  });
+                }
               });
-            }
           } else {
             ws.sendJson({
               client,

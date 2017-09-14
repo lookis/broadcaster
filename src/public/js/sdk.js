@@ -25,21 +25,21 @@ Sender.prototype.send = function(msg) {
   this.doSend(msg, 'forward');
 };
 
-Sender.prototype.echo = function(msg) {
-  this.doSend(msg, 'echo');
-};
-
 Sender.prototype.onmessage = function(callback) {
   const proxy = function(msg) {
-    callback(msg);
+    if (msg.type === 'forward') {
+      callback(msg.payload);
+    }
   };
   this.collector(proxy);
 };
 
 Sender.prototype.oncemessage = function(callback) {
   const onceProxy = function(msg, remover) {
-    remover();
-    callback(msg);
+    if (msg.type === 'forward') {
+      remover();
+      callback(msg.payload);
+    }
   };
   this.collector(onceProxy);
 };
@@ -55,6 +55,7 @@ const Sdk = () => {
   } catch (e) {
     SocketImpl = WebSocket;
   }
+  const aliveTokens = [];
   const messageListener = {};
   let client;
   const initializeClient = _client => {
@@ -63,11 +64,20 @@ const Sdk = () => {
         setTimeout(() => {
           client = new Promise(resolve => {
             const socks = new SocketImpl(`ws://${conf.hostname}/connection`);
-            initializeClient(socks);
             socks.onopen = () => {
+              aliveTokens.forEach(token => {
+                socks.send(
+                  JSON.stringify({
+                    token,
+                    service: 'ping',
+                    payload: {},
+                  }),
+                );
+              });
               resolve(socks);
             };
           });
+          client.then(initializeClient);
         }, conf.reconnect);
       } else {
         client = null;
@@ -102,23 +112,34 @@ const Sdk = () => {
       }
       if (e.data) {
         const message = JSON.parse(e.data);
-        if (message.code === '000000') {
-          callback(
-            null,
-            new Sender(getClient.bind(self), message.msg, onMessage => {
+        if (
+          message.type === 'authentication' &&
+          message.payload.code === '000000'
+        ) {
+          aliveTokens.push(message.payload.msg);
+          const sender = new Sender(
+            getClient.bind(self),
+            message.payload.msg,
+            onMessage => {
               const decoder = ev => {
-                onMessage(JSON.parse(ev.data).payload, () => {
-                  const proxyIndex = messageListener[clientConf.client].indexOf(
-                    decoder,
-                  );
-                  if (proxyIndex > -1) {
-                    messageListener[clientConf.client].splice(index, 1);
-                  }
-                });
+                onMessage(
+                  // parsed message
+                  JSON.parse(ev.data),
+                  // remover for once message
+                  () => {
+                    const proxyIndex = messageListener[
+                      clientConf.client
+                    ].indexOf(decoder);
+                    if (proxyIndex > -1) {
+                      messageListener[clientConf.client].splice(index, 1);
+                    }
+                  },
+                );
               };
               messageListener[clientConf.client].push(decoder);
-            }),
+            },
           );
+          callback(null, sender);
         } else {
           callback(message, null);
         }

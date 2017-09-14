@@ -53,8 +53,8 @@ describe('service', () => {
   it('should return unknown service if service goes wrong', done => {
     client.once('message', msg => {
       const message = JSON.parse(msg);
-      expect(message.code).to.be.equal(constants.service.success);
-      const token = message.msg;
+      expect(message.payload.code).to.be.equal(constants.service.success);
+      const token = message.payload.msg;
       client.on('message', msg2 => {
         const message2 = JSON.parse(msg2);
         expect(message2.code).to.be.equal(constants.service.errors.unknown);
@@ -66,7 +66,7 @@ describe('service', () => {
           service: 'unknown',
         }),
       );
-    })
+    });
     client.on('open', () => {
       const message = {
         service: 'authentication',

@@ -5,7 +5,7 @@ import config from 'config';
 import fetch from 'node-fetch';
 
 export default function(ws, client, msg) {
-  fetch(`${config.clients[client].callback}/${ws.id}`, {
+  fetch(`${config.clients[client].callback}/${msg.token}`, {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',

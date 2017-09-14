@@ -16,24 +16,29 @@ module.exports = function(globalWsInstance) {
   });
 
   const router = express.Router();
-  router.post('/connection/:connection', (req, res) => {
+  router.post('/client/:token', (req, res) => {
     verifier(req.body)
       .then(() => {
         redis
-          .publishAsync(
-            `connection|${req.params.connection}`,
-            JSON.stringify({
-              client: req.body.client,
-              payload: req.body.payload,
-            }),
-          )
-          .then(received => {
-            if (received === 0) {
-              res.status(410);
-            } else {
-              res.status(200);
-            }
-            res.send();
+          .getAsync(`token:connection|${req.params.token}`)
+          .then(connection => {
+            redis
+              .publishAsync(
+                `connection|${connection}`,
+                JSON.stringify({
+                  client: req.body.client,
+                  type: 'forward',
+                  payload: req.body.payload,
+                }),
+              )
+              .then(received => {
+                if (received === 0) {
+                  res.status(410);
+                } else {
+                  res.status(200);
+                }
+                res.send();
+              });
           });
       })
       .catch(e => {
