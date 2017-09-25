@@ -7,7 +7,7 @@ import md5 from 'md5';
 
 function sign(msg) {
   const ordered = {};
-  ['timestamp', 'client', 'nonce'].forEach(key => {
+  Object.keys(msg).sort().forEach(key => {
     if (msg[key] && key !== 'signature' && key !== 'service') {
       if (typeof msg[key] === 'object') {
         ordered[key] = JSON.stringify(msg[key]);

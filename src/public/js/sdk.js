@@ -46,6 +46,7 @@ Sender.prototype.oncemessage = function(callback) {
 
 const Sdk = () => {
   let conf = {
+    ping: 5000,
     reconnect: 500,
     hostname: this.location ? this.location.host : '127.0.0.1:8080',
   };
@@ -58,10 +59,12 @@ const Sdk = () => {
   const aliveTokens = [];
   const messageListener = {};
   let client;
+  let heartbeatTimer;
   const initializeClient = _client => {
     _client.onclose = e => {
       if (e.code !== 1000) {
         setTimeout(() => {
+          clearInterval(heartbeatTimer);
           client = new Promise(resolve => {
             const socks = new SocketImpl(`ws://${conf.hostname}/connection`);
             socks.onopen = () => {
@@ -94,6 +97,18 @@ const Sdk = () => {
           } catch (ex) {}
         });
     };
+
+    heartbeatTimer = setInterval(() => {
+      aliveTokens.forEach(token => {
+        _client.send(
+          JSON.stringify({
+            token,
+            service: 'ping',
+            payload: {},
+          }),
+        );
+      });
+    }, conf.ping);
   };
   const getClient = function() {
     return client;
@@ -188,7 +203,7 @@ const Sdk = () => {
   if (typeof define === 'function' && define.amd) {
     // eslint-disable-next-line no-undef
     define('broadcaster', [], factory);
-  } else if (typeof exports === 'object') {
+  } else if (typeof module === 'object' && module.exports) {
     // Node. Does not work with strict CommonJS, but
     // only CommonJS-like environments that support module.exports,
     // like Node.

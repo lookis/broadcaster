@@ -9,11 +9,13 @@ import { redis } from '../redis';
 
 function sign(msg, secret) {
   const ordered = {};
-  ['timestamp', 'client', 'nonce'].forEach(key => {
-    if (typeof msg[key] === 'object') {
-      ordered[key] = JSON.stringify(msg[key]);
-    } else {
-      ordered[key] = msg[key];
+  Object.keys(msg).sort().forEach(key => {
+    if (msg[key] && key !== 'signature' && key !== 'service') {
+      if (typeof msg[key] === 'object') {
+        ordered[key] = JSON.stringify(msg[key]);
+      } else {
+        ordered[key] = msg[key];
+      }
     }
   });
   const stringA = querystring.unescape(querystring.stringify(ordered));

@@ -16,10 +16,7 @@ chai.use(chaiHttp);
 
 describe('upstream', () => {
   const clients = [];
-  // let client;
   let server;
-  let token;
-
   const getClient = authenticated => {
     const client = new WebSocket(
       `ws://${config.server.host === '0.0.0.0' || config.server.host === '::'
@@ -30,8 +27,7 @@ describe('upstream', () => {
       client.once('message', msg => {
         const message = JSON.parse(msg);
         if (message.payload.code === constants.service.success) {
-          token = message.payload.msg;
-          authenticated();
+          authenticated(message.payload.msg);
         }
       });
 
@@ -54,13 +50,7 @@ describe('upstream', () => {
       const clientId = Object.keys(config.clients)[0];
       const clientInfo = config.clients[clientId];
       const url = new URL(clientInfo.callback);
-      nock(url.origin)
-        .put(uri => {
-          const parts = uri.split('/');
-          token = parts[parts.length - 1];
-          return uri.startsWith(url.pathname);
-        })
-        .reply(200);
+      nock(url.origin).put(uri => uri.startsWith(url.pathname)).reply(200);
       done();
     });
   });
@@ -119,7 +109,7 @@ describe('upstream', () => {
     const message = {
       hello: 'world',
     };
-    const client = getClient(() => {
+    const client = getClient(token => {
       client.on('message', _msg => {
         const msg = JSON.parse(_msg);
         expect(msg.client).to.be.equal(Object.keys(config.clients)[0]);
@@ -147,7 +137,7 @@ describe('upstream', () => {
     const message = {
       hello: 'world',
     };
-    const client = getClient(() => {
+    const client = getClient(token => {
       client.once('message', _msg => {
         const clientMsg = JSON.parse(_msg);
         expect(clientMsg.client).to.be.equal(Object.keys(config.clients)[0]);
@@ -192,7 +182,7 @@ describe('upstream', () => {
               }),
             )
             .end((err, res) => {
-              expect(res).to.have.status(410);
+              expect(res).to.have.status(408);
               newClient.send(
                 JSON.stringify({
                   token,
@@ -216,6 +206,106 @@ describe('upstream', () => {
         .end((err, res) => {
           expect(res).to.have.status(200);
         });
+    });
+  });
+
+  it('should send to all client', done => {
+    const message = {
+      hello: Math.random(),
+    };
+    const client1 = getClient(token1 => {
+      const client2 = getClient(token2 => {
+        Promise.all([
+          new Promise(resolve => {
+            client1.on('message', _msg => {
+              const clientMsg = JSON.parse(_msg);
+              expect(clientMsg.client).to.be.equal(
+                Object.keys(config.clients)[0],
+              );
+              expect(clientMsg.payload).to.be.deep.equal(message);
+              resolve();
+            });
+          }),
+          new Promise(resolve => {
+            client2.on('message', _msg => {
+              const clientMsg = JSON.parse(_msg);
+              expect(clientMsg.client).to.be.equal(
+                Object.keys(config.clients)[0],
+              );
+              expect(clientMsg.payload).to.be.deep.equal(message);
+              resolve();
+            });
+          }),
+        ]).then(() => {
+          done();
+        });
+        chai
+          .request(app)
+          .post(`/clients`)
+          .send(
+            sign({
+              client: Object.keys(config.clients)[0],
+              timestamp: new Date().getTime() / 1000,
+              nonce: Math.random().toString(),
+              payload: message,
+              tokens: [token1, token2],
+            }),
+          )
+          .end((err, res) => {
+            expect(res).to.have.status(200);
+          });
+      });
+    });
+  });
+
+  it('should send to all client besides not exist one', done => {
+    const message = {
+      hello: Math.random(),
+    };
+    const notExistsToken = Math.random();
+    const client1 = getClient(token1 => {
+      const client2 = getClient(token2 => {
+        Promise.all([
+          new Promise(resolve => {
+            client1.on('message', _msg => {
+              const clientMsg = JSON.parse(_msg);
+              expect(clientMsg.client).to.be.equal(
+                Object.keys(config.clients)[0],
+              );
+              expect(clientMsg.payload).to.be.deep.equal(message);
+              resolve();
+            });
+          }),
+          new Promise(resolve => {
+            client2.on('message', _msg => {
+              const clientMsg = JSON.parse(_msg);
+              expect(clientMsg.client).to.be.equal(
+                Object.keys(config.clients)[0],
+              );
+              expect(clientMsg.payload).to.be.deep.equal(message);
+              resolve();
+            });
+          }),
+        ]).then(() => {
+          done();
+        });
+        chai
+          .request(app)
+          .post(`/clients`)
+          .send(
+            sign({
+              client: Object.keys(config.clients)[0],
+              timestamp: new Date().getTime() / 1000,
+              nonce: Math.random().toString(),
+              payload: message,
+              tokens: [token1, token2, notExistsToken],
+            }),
+          )
+          .end((err, res) => {
+            expect(res).to.have.status(200);
+            expect(res).to.include(notExistsToken);
+          });
+      });
     });
   });
 });

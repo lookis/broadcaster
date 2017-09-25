@@ -2,6 +2,10 @@
   "redis": {
     "db": 0
   },
+    "server": {
+    "host": "0.0.0.0",
+    "port": 8081
+  },
   "clients": {
     "1a778393fd9bd":{
       "name": "chat",
@@ -11,7 +15,7 @@
     "8a8c3aff2592b": {
       "name": "go",
       "secret": "2e62108dd78e6",
-      "callback": "http://localhost:3001/connection/"
+      "callback": "http://127.0.0.1:8080/client"
     }
   }
 }

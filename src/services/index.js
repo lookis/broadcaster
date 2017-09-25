@@ -25,7 +25,11 @@ export default function(ws) {
         .then(client => {
           if (client && config.clients[client]) {
             redis
-              .setexAsync(`token:connection|${msg.token}`, 60 * 60 * 24, ws.id)
+              .setexAsync(
+                `token:connection|${msg.token}`,
+                config.tokenTimeout,
+                ws.id,
+              )
               .then(() => {
                 let service;
                 try {
