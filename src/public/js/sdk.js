@@ -63,28 +63,33 @@ const Sdk = () => {
   const initializeClient = _client => {
     _client.onclose = e => {
       if (e.code !== 1000) {
-        const reconnectTimer = setInterval(() => {
-          clearInterval(heartbeatTimer);
-          client = new Promise(resolve => {
-            const socks = new SocketImpl(`ws://${conf.hostname}/connection`);
-            socks.onopen = () => {
-              aliveTokens.forEach(token => {
-                socks.send(
-                  JSON.stringify({
-                    token,
-                    service: 'ping',
-                    payload: {},
-                  }),
-                );
-              });
-              resolve(socks);
-            };
-          });
-          client.then(() => {
-            clearInterval(reconnectTimer);
-          });
-          client.then(initializeClient);
-        }, conf.reconnect);
+        const reconnect = () => {
+          setTimeout(() => {
+            clearInterval(heartbeatTimer);
+            client = new Promise(resolve => {
+              const socks = new SocketImpl(`ws://${conf.hostname}/connection`);
+              socks.onopen = () => {
+                aliveTokens.forEach(token => {
+                  socks.send(
+                    JSON.stringify({
+                      token,
+                      service: 'ping',
+                      payload: {},
+                    }),
+                  );
+                });
+                resolve(socks);
+              };
+              socks.onclose = ec => {
+                if (ec.code !== 1000) {
+                  reconnect();
+                }
+              };
+            });
+            client.then(initializeClient);
+          }, conf.reconnect);
+        };
+        reconnect();
       } else {
         client = null;
       }

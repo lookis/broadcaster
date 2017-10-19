@@ -56,14 +56,14 @@ describe('sdk', () => {
       `ws://${config.server.host}:${config.server.port}/connection`,
     );
     server = app.listen(config.server.port, config.server.host, () => {
-      mockServer.on('message', msg => {
-        client.send(msg);
-      });
       client = new WebSocket(
         `ws://${config.server.host === '0.0.0.0' || config.server.host === '::'
           ? '127.0.0.1'
           : config.server.host}:${config.server.port}/connection`,
       );
+      mockServer.on('message', msg => {
+        client.send(msg);
+      });
       const oldServer = mockServer;
       client.on('message', msg => {
         oldServer.send(msg);
