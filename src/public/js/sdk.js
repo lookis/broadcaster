@@ -63,7 +63,7 @@ const Sdk = () => {
   const initializeClient = _client => {
     _client.onclose = e => {
       if (e.code !== 1000) {
-        setTimeout(() => {
+        const reconnectTimer = setInterval(() => {
           clearInterval(heartbeatTimer);
           client = new Promise(resolve => {
             const socks = new SocketImpl(`ws://${conf.hostname}/connection`);
@@ -79,6 +79,9 @@ const Sdk = () => {
               });
               resolve(socks);
             };
+          });
+          client.then(() => {
+            clearInterval(reconnectTimer);
           });
           client.then(initializeClient);
         }, conf.reconnect);
