@@ -1,5 +1,7 @@
 {
   "redis": {
+    "host": "redis.shoutan.com",
+    "port": 6379,
     "db": 0
   },
     "server": {
@@ -15,7 +17,7 @@
     "8a8c3aff2592b": {
       "name": "go",
       "secret": "2e62108dd78e6",
-      "callback": "http://127.0.0.1:8080/client"
+      "callback": "http://server.shoutan.com:8080/client"
     }
   }
 }
