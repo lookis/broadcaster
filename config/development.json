@@ -17,7 +17,7 @@
     "8a8c3aff2592b": {
       "name": "go",
       "secret": "2e62108dd78e6",
-      "callback": "http://server.shoutan.com:8080/client"
+      "callback": "http://shoutan.zan-shang.com/client"
     }
   }
 }
