@@ -1,0 +1,24 @@
+{
+  "redis": {
+    "host": "127.0.0.1",
+    "port": 6379,
+    "db": 2,
+    "password": "wod0Iv9eel6nuk0hI7hY"
+  },
+  "server": {
+    "host": "0.0.0.0",
+    "port": 8081
+  },
+  "clients": {
+    "1a778393fd9bd":{
+      "name": "chat",
+      "secret": "21e35ef705384",
+      "callback": "http://localhost:3000/connection/"
+    },
+    "8a8c3aff2592b": {
+      "name": "go",
+      "secret": "2e62108dd78e6",
+      "callback": "http://shoutan.zan-shang.com/client"
+    }
+  }
+}
