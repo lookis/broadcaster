@@ -1,6 +1,6 @@
 {
   "redis": {
-    "host": "redis.shoutan.com",
+    "host": "redis.shoutan.zan-shang.com",
     "port": 6379,
     "db": 0
   },
