@@ -7,7 +7,8 @@ WORKDIR /usr/src/app
 COPY . .
 
 EXPOSE 80
-
+# Build
+RUN yarn install --no-progress && yarn build && rm -rf node_modules
 # Install Node.js dependencies
 RUN yarn install --production --no-progress && yarn cache clean
 
