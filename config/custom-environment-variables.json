@@ -1,3 +1,7 @@
 {
-  "redis": "REDIS_URL"
+  "redis": "REDIS_URL",
+  "server": {
+    "host": "SERVER_HOST",
+    "port": "SERVER_PORT"
+  }
 }
