@@ -6,6 +6,8 @@ WORKDIR /usr/src/app
 # Copy application files
 COPY . .
 
+EXPOSE 80
+
 # Install Node.js dependencies
 RUN yarn install --production --no-progress && yarn cache clean
 
