@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'path';
 import compression from 'compression';
 import bodyParser from 'body-parser';
 import PrettyError from 'pretty-error';
@@ -15,7 +16,7 @@ app.use(bodyParser.json());
 
 app.use(require('./routes')(wsInstance));
 
-app.use(express.static('./public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 const pe = new PrettyError();
 pe.skipNodeFiles();

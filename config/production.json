@@ -5,6 +5,9 @@
     "db": 2,
     "password": "wod0Iv9eel6nuk0hI7hY"
   },
+  "server": {
+    "port": 8081
+  },
   "clients": {
     "1a778393fd9bd":{
       "name": "chat",
